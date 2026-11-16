@@ -1,7 +1,5 @@
 import { ref, reactive } from 'vue'
 
-// O buscador recebe { page, size } e deve retornar um objeto Page do Spring
-// (content, totalElements, totalPages, first, last). A paginação do Spring começa em 0.
 export function useListagemPaginada(buscador) {
     const itens = ref([])
     const carregando = ref(false)
@@ -18,17 +16,11 @@ export function useListagemPaginada(buscador) {
     const total = ref(0)
     const vazio = ref(false)
 
-    // Se uma busca antiga terminar depois de uma mais nova (ex.: digitação rápida no filtro),
-    // a resposta antiga é descartada para não sobrescrever o resultado atual.
-    let ultimaRequisicao = 0
-
     async function carregar() {
-        const requisicao = ++ultimaRequisicao
         carregando.value = true
         erro.value = ''
         try {
             const dados = await buscador({ page: pagina.numero, size: pagina.tamanho })
-            if (requisicao !== ultimaRequisicao) return
             itens.value = dados.content
             pagina.totalPaginas = dados.totalPages
             pagina.totalItens = dados.totalElements
@@ -37,12 +29,10 @@ export function useListagemPaginada(buscador) {
             total.value = dados.totalElements
             vazio.value = dados.content.length === 0
         } catch (e) {
-            if (requisicao !== ultimaRequisicao) return
-            erro.value = 'Não foi possível carregar os dados. Verifique se o backend está no ar.'
+            erro.value = 'Não foi possível carregar os dados.'
             itens.value = []
-            total.value = 0
         } finally {
-            if (requisicao === ultimaRequisicao) carregando.value = false
+            carregando.value = false
         }
     }
 

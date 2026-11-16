@@ -12,26 +12,16 @@ const props = defineProps({
 })
 defineEmits(['proxima', 'anterior', 'mudar-tamanho'])
 
-// o Spring começa a contar as páginas em 0; para o usuário mostramos a partir de 1
 const numeroHumano = computed(() => props.numero + 1)
 </script>
 
 <template>
-    <nav class="paginacao" aria-label="Paginação">
+    <nav class="paginacao">
         <span>Página {{ numeroHumano }} de {{ totalPaginas }} ({{ totalItens }} item(ns))</span>
-        <select
-            :value="tamanho"
-            aria-label="Itens por página"
-            :disabled="desabilitado"
-            @change="$emit('mudar-tamanho', Number($event.target.value))"
-        >
+        <select :value="tamanho" @change="$emit('mudar-tamanho', Number($event.target.value))">
             <option v-for="t in [5, 10, 20, 50]" :key="t" :value="t">{{ t }} por página</option>
         </select>
-        <button type="button" class="btn" :disabled="primeira || desabilitado" @click="$emit('anterior')">
-            Anterior
-        </button>
-        <button type="button" class="btn" :disabled="ultima || desabilitado" @click="$emit('proxima')">
-            Próxima
-        </button>
+        <button :disabled="primeira || desabilitado" @click="$emit('anterior')">Anterior</button>
+        <button :disabled="ultima || desabilitado" @click="$emit('proxima')">Próxima</button>
     </nav>
 </template>

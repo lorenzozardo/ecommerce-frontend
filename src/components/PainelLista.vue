@@ -16,16 +16,11 @@ defineEmits(['atualizar'])
             <h2>{{ titulo }} <span v-if="total">({{ total }})</span></h2>
             <div class="painel-acoes">
                 <slot name="acoes" />
-                <button type="button" class="btn" :disabled="carregando" @click="$emit('atualizar')">
-                    Atualizar
-                </button>
+                <button class="btn" @click="$emit('atualizar')">Atualizar</button>
             </div>
         </div>
-
         <slot name="filtros" />
-
-        <!-- skeleton loading enquanto os dados carregam -->
-        <div v-if="carregando" class="skeleton-grid" aria-busy="true" aria-label="Carregando">
+        <div v-if="carregando" class="skeleton-grid">
             <div v-for="n in 6" :key="n" class="skeleton-card">
                 <div class="skeleton-linha skeleton-titulo"></div>
                 <div class="skeleton-linha"></div>
@@ -37,7 +32,7 @@ defineEmits(['atualizar'])
             </div>
         </div>
         <p v-else-if="erro" class="erro">{{ erro }}</p>
-        <p v-else-if="vazio" class="aviso">{{ mensagemVazio }}</p>
+        <p v-else-if="vazio">{{ mensagemVazio }}</p>
         <slot v-else />
     </section>
 </template>

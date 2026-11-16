@@ -9,7 +9,6 @@ const precoFormatado = computed(() => {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 })
 
-// badges de status do estoque
 const semEstoque = computed(() => Number(props.produto.estoque) <= 0)
 const estoqueBaixo = computed(() => {
     const q = Number(props.produto.estoque)
@@ -20,13 +19,13 @@ const estoqueBaixo = computed(() => {
 <template>
     <article class="produto-card">
         <div>
-            <span v-if="produto.nomeCategoria" class="produto-categoria">{{ produto.nomeCategoria }}</span>
-            <h3>{{ produto.nome }}</h3>
+            <h2>{{ produto.nome }}</h2>
             <p>{{ produto.descricao || 'Produto sem descrição cadastrada.' }}</p>
+            <p>Categoria: {{ produto.nomeCategoria }}</p>
         </div>
         <footer>
             <strong>{{ precoFormatado }}</strong>
-            <div class="produto-estoque">
+            <div>
                 <span>Estoque: {{ produto.estoque }}</span>
                 <span v-if="semEstoque" class="badge badge-danger">Sem estoque</span>
                 <span v-else-if="estoqueBaixo" class="badge badge-warning">Estoque baixo</span>

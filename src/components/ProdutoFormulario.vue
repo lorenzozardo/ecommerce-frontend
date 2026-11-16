@@ -1,8 +1,7 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { cadastrarProduto } from '../services/produtoService.js'
 import { listarCategorias } from '../services/categoriaService.js'
-import { mensagemDeErro } from '../services/erros.js'
 
 const emit = defineEmits([
     'produto-cadastrado',
@@ -21,40 +20,26 @@ const tentouEnviar = ref(false)
 const salvando = ref(false)
 const erroFormulario = ref('')
 const categorias = ref([])
-const campoNome = ref(null)
-
-function vazio(valor) {
-    return valor === '' || valor === null || valor === undefined
-}
 
 const erros = computed(() => {
     const e = {}
 
-    const nome = produto.value.nome.trim()
-    if (!nome) {
+    if (!produto.value.nome.trim()) {
         e.nome = 'Informe o nome do produto.'
-    } else if (nome.length < 3) {
+    } else if (produto.value.nome.trim().length < 3) {
         e.nome = 'O nome deve ter pelo menos 3 caracteres.'
     }
 
-    const preco = Number(produto.value.preco)
-    if (vazio(produto.value.preco)) {
+    if (!produto.value.preco) {
         e.preco = 'Informe o preço.'
-    } else if (Number.isNaN(preco)) {
-        e.preco = 'Informe um preço válido.'
-    } else if (preco <= 0) {
+    } else if (Number(produto.value.preco) <= 0) {
         e.preco = 'O preço deve ser maior que zero.'
-    } else if (Math.round(preco * 100) / 100 !== preco) {
-        e.preco = 'O preço deve ter no máximo 2 casas decimais.'
     }
 
-    const estoque = Number(produto.value.estoque)
-    if (vazio(produto.value.estoque)) {
+    if (produto.value.estoque === '') {
         e.estoque = 'Informe o estoque.'
-    } else if (estoque < 0) {
+    } else if (Number(produto.value.estoque) < 0) {
         e.estoque = 'O estoque não pode ser negativo.'
-    } else if (!Number.isInteger(estoque)) {
-        e.estoque = 'O estoque deve ser um número inteiro.'
     }
 
     if (!produto.value.categoriaId) {
@@ -87,7 +72,7 @@ async function salvarProduto() {
             categoriaId
         } = produto.value
 
-        const produtoCriado = await cadastrarProduto({
+        await cadastrarProduto({
             nome: nome.trim(),
             descricao: descricao.trim(),
             preco: Number(preco),
@@ -105,87 +90,50 @@ async function salvarProduto() {
 
         tentouEnviar.value = false
 
-        emit('produto-cadastrado', produtoCriado)
+        emit('produto-cadastrado')
 
     } catch (error) {
         console.error(error)
 
-        // mostra a mensagem do backend quando existir (ex.: "Categoria não encontrada")
-        erroFormulario.value = mensagemDeErro(
-            error,
+        erroFormulario.value =
             'Não foi possível cadastrar o produto. Tente novamente.'
-        )
 
     } finally {
         salvando.value = false
     }
 }
 
-// não deixa fechar no meio do envio
-function fechar() {
-    if (!salvando.value) {
-        emit('fechar')
-    }
-}
-
-function fecharComEsc(evento) {
-    if (evento.key === 'Escape') {
-        fechar()
-    }
-}
-
 onMounted(async () => {
-    window.addEventListener('keydown', fecharComEsc)
-    campoNome.value?.focus()
-
-    try {
-        categorias.value = await listarCategorias()
-    } catch (error) {
-        erroFormulario.value = 'Não foi possível carregar as categorias. Verifique se o backend está no ar.'
-    }
-})
-
-onBeforeUnmount(() => {
-    window.removeEventListener('keydown', fecharComEsc)
+    categorias.value = await listarCategorias()
 })
 </script>
 
 <template>
     <div
         class="modal-overlay"
-        @click.self="fechar"
-    >
-        <div
-            class="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="titulo-formulario"
-        >
+        @click.self="emit('fechar')">
+        <div class="modal">
 
             <div class="modal-header">
 
                 <div>
-                    <h2 id="titulo-formulario">Cadastrar Produto</h2>
+                    <h2>Cadastrar Produto</h2>
                     <p>Informe os dados do novo produto.</p>
                 </div>
 
                 <button
                     type="button"
                     class="modal-fechar"
-                    aria-label="Fechar"
-                    @click="fechar"
-                >
-                    ×
+                    @click="emit('fechar')">×
                 </button>
 
             </div>
 
-            <form novalidate @submit.prevent="salvarProduto">
+            <form @submit.prevent="salvarProduto">
 
                 <p
                     v-if="erroFormulario"
-                    class="erro"
-                >
+                    class="erro">
                     {{ erroFormulario }}
                 </p>
 
@@ -197,10 +145,8 @@ onBeforeUnmount(() => {
 
                     <input
                         id="nome"
-                        ref="campoNome"
                         v-model="produto.nome"
                         type="text"
-                        maxlength="100"
                         placeholder="Digite o nome do produto"
                         :class="{
                             'input-error':
@@ -274,7 +220,6 @@ onBeforeUnmount(() => {
                         <input
                             id="estoque"
                             type="number"
-                            step="1"
                             v-model="produto.estoque"
                             placeholder="0"
                             :class="{
@@ -335,8 +280,7 @@ onBeforeUnmount(() => {
                     <button
                         type="button"
                         class="btn btn-secondary"
-                        :disabled="salvando"
-                        @click="fechar"
+                        @click="emit('fechar')"
                     >
                         Cancelar
                     </button>
