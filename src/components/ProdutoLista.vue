@@ -42,7 +42,11 @@ const { filtros, limpar: limparFiltros } = useFiltro({
 })
 
 function buscador({ page, size }) {
-    return buscarProdutosPaginados({ page, size, nome: filtros.nome, categoriaId: filtros.categoriaId })
+    return new Promise(resolve =>
+        setTimeout(() =>
+            resolve(buscarProdutosPaginados({ page, size, nome: filtros.nome, categoriaId: filtros.categoriaId }))
+        , 2000)
+    )
 }
 
 const { itens: produtos, carregando, erro, vazio, total, pagina,
